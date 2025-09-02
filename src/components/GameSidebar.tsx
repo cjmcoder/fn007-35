@@ -12,17 +12,20 @@ import {
   Gift,
   HelpCircle
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const GameSidebar = () => {
+  const navigate = useNavigate();
+  
   const navigationItems = [
-    { icon: Home, label: "MY ARENA", active: true },
-    { icon: Zap, label: "MY MATCHES", count: 3 },
-    { icon: Trophy, label: "MY TOURNAMENTS" },
-    { icon: Calendar, label: "EVENTS" },
-    { icon: Users, label: "LEADERBOARDS" },
-    { icon: Gift, label: "REWARDS" },
-    { icon: Settings, label: "SETTINGS" },
-    { icon: HelpCircle, label: "SUPPORT" }
+    { icon: Home, label: "MY ARENA", path: "/", active: true },
+    { icon: Zap, label: "MY MATCHES", path: "/my-profile?tab=matches", count: 3 },
+    { icon: Trophy, label: "MY TOURNAMENTS", path: "/my-tournaments" },
+    { icon: Calendar, label: "EVENTS", path: "/events" },
+    { icon: Users, label: "LEADERBOARDS", path: "/leaderboards" },
+    { icon: Gift, label: "REWARDS", path: "/rewards" },
+    { icon: Settings, label: "SETTINGS", path: "/settings" },
+    { icon: HelpCircle, label: "SUPPORT", path: "/support" }
   ];
 
   return (
@@ -51,6 +54,7 @@ const GameSidebar = () => {
                 ? "bg-gradient-primary text-background shadow-glow" 
                 : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
             }`}
+            onClick={() => navigate(item.path)}
           >
             <item.icon className="w-5 h-5 mr-3" />
             <span className="font-medium">{item.label}</span>

@@ -6,6 +6,7 @@ import ChatPanel from "@/components/LiveFeed";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 
 const mockChallenges = [
   {
@@ -111,7 +112,16 @@ const Index = () => {
                 ))}
                 
                 <div className="text-center py-8">
-                  <Button variant="outline" className="neon-border">
+                  <Button 
+                    variant="outline" 
+                    className="neon-border"
+                    onClick={() => {
+                      toast({
+                        title: "Loading More Challenges",
+                        description: "Fetching additional challenges...",
+                      });
+                    }}
+                  >
                     Load More Challenges
                   </Button>
                 </div>
@@ -120,14 +130,36 @@ const Index = () => {
               <TabsContent value="players">
                 <div className="glass-card p-8 rounded-xl text-center">
                   <h3 className="text-xl font-bold mb-2">Player Directory</h3>
-                  <p className="text-muted-foreground">Browse and connect with players from around the world</p>
+                  <p className="text-muted-foreground mb-4">Browse and connect with players from around the world</p>
+                  <Button 
+                    className="bg-gradient-primary hover:shadow-glow"
+                    onClick={() => {
+                      toast({
+                        title: "Coming Soon",
+                        description: "Player directory feature will be available soon!",
+                      });
+                    }}
+                  >
+                    Browse Players
+                  </Button>
                 </div>
               </TabsContent>
 
               <TabsContent value="tournaments">
                 <div className="glass-card p-8 rounded-xl text-center">
                   <h3 className="text-xl font-bold mb-2">Tournament Hub</h3>
-                  <p className="text-muted-foreground">Join competitive tournaments and climb the rankings</p>
+                  <p className="text-muted-foreground mb-4">Join competitive tournaments and climb the rankings</p>
+                  <Button 
+                    className="bg-gradient-primary hover:shadow-glow"
+                    onClick={() => {
+                      toast({
+                        title: "Coming Soon",
+                        description: "Tournament listings will be available soon!",
+                      });
+                    }}
+                  >
+                    View Tournaments
+                  </Button>
                 </div>
               </TabsContent>
             </Tabs>

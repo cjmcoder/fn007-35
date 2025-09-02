@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Crown, Trophy, DollarSign, Monitor } from "l
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 interface LivePlayer {
   id: string;
@@ -456,7 +457,17 @@ export const TopLivePlayers = () => {
                         Watch Live
                       </Button>
                     ) : (
-                      <Button size="sm" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-white/30">
+                      <Button 
+                        size="sm" 
+                        className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-white/30"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toast({
+                            title: `Challenge ${player.username}`,
+                            description: `Send challenge to rank #${player.rank} player`,
+                          });
+                        }}
+                      >
                         <Crown className="w-4 h-4 mr-2" />
                         Challenge Player
                       </Button>

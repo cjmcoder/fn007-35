@@ -1,8 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Bell, User, MessageCircle, Home, Target } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const TopHeader = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
   return (
     <header className="h-16 bg-card/30 backdrop-blur-md border-b border-border flex items-center justify-between px-6">
       {/* Left Section - Branding & Navigation */}
@@ -34,6 +39,16 @@ const TopHeader = () => {
             <input
               type="text"
               placeholder="Search players, games..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  toast({
+                    title: "Search Feature",
+                    description: `Searching for "${searchQuery}"...`,
+                  });
+                }
+              }}
               className="pl-10 pr-4 py-2 w-64 bg-muted/50 border border-border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
             />
           </div>
@@ -52,12 +67,34 @@ const TopHeader = () => {
 
         {/* Notifications & Messages */}
         <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="icon" className="relative h-9 w-9">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative h-9 w-9"
+            onClick={() => {
+              toast({
+                title: "Notifications",
+                description: "You have 5 new notifications",
+              });
+              navigate('/my-profile?tab=mail');
+            }}
+          >
             <Bell className="w-5 h-5" />
             <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 bg-destructive text-xs">5</Badge>
           </Button>
 
-          <Button variant="ghost" size="icon" className="relative h-9 w-9">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative h-9 w-9"
+            onClick={() => {
+              toast({
+                title: "Messages",
+                description: "You have 2 new messages",
+              });
+              navigate('/my-profile?tab=mail');
+            }}
+          >
             <MessageCircle className="w-5 h-5" />
             <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 bg-neon-cyan text-background text-xs">2</Badge>
           </Button>
@@ -71,10 +108,20 @@ const TopHeader = () => {
 
         {/* User Profile */}
         <div className="flex items-center space-x-2 pl-2 border-l border-border">
-          <Button variant="ghost" size="icon" className="neon-border h-9 w-9">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="neon-border h-9 w-9"
+            onClick={() => navigate('/my-profile')}
+          >
             <User className="w-5 h-5" />
           </Button>
-          <span className="text-sm font-medium hidden lg:inline">Goosegonewild3x</span>
+          <span 
+            className="text-sm font-medium hidden lg:inline cursor-pointer hover:text-primary transition-colors"
+            onClick={() => navigate('/my-profile')}
+          >
+            Goosegonewild3x
+          </span>
         </div>
       </div>
     </header>

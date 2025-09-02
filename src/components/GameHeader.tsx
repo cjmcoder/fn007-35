@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Bell, User, Zap, Trophy, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const GameHeader = () => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
   return (
     <header className="w-full glass-card border-b border-neon-cyan/30 p-4">
       <div className="container mx-auto flex items-center justify-between">
@@ -21,21 +24,43 @@ const GameHeader = () => {
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <Button variant="ghost" className="neon-text hover:bg-primary/10">
+          <Button 
+            variant="ghost" 
+            className="neon-text hover:bg-primary/10"
+            onClick={() => navigate('/my-tournaments')}
+          >
             <Trophy className="w-4 h-4 mr-2" />
             Tournaments
           </Button>
-          <Button variant="ghost" className="neon-text hover:bg-primary/10">
+          <Button 
+            variant="ghost" 
+            className="neon-text hover:bg-primary/10"
+            onClick={() => navigate('/')}
+          >
             <Zap className="w-4 h-4 mr-2" />
             Challenges
           </Button>
-          <Button variant="ghost" className="neon-text hover:bg-primary/10" onClick={() => navigate('/flocktube')} aria-label="Go to FlockTube">
+          <Button 
+            variant="ghost" 
+            className="neon-text hover:bg-primary/10" 
+            onClick={() => navigate('/flocktube')} 
+            aria-label="Go to FlockTube"
+          >
             FlockTube
           </Button>
-          <Button variant="ghost" className="neon-text hover:bg-primary/10" onClick={() => navigate('/leaderboards')} aria-label="Go to Leaderboards">
+          <Button 
+            variant="ghost" 
+            className="neon-text hover:bg-primary/10" 
+            onClick={() => navigate('/leaderboards')} 
+            aria-label="Go to Leaderboards"
+          >
             Leaderboards
           </Button>
-          <Button variant="ghost" className="neon-text hover:bg-primary/10">
+          <Button 
+            variant="ghost" 
+            className="neon-text hover:bg-primary/10"
+            onClick={() => navigate('/my-profile')}
+          >
             My Profile
           </Button>
         </nav>
@@ -48,12 +73,33 @@ const GameHeader = () => {
             <input
               type="text"
               placeholder="Search players..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  toast({
+                    title: "Search Feature",
+                    description: `Searching for "${searchQuery}"...`,
+                  });
+                }
+              }}
               className="pl-10 pr-4 py-2 bg-muted/50 border border-border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative neon-border pulse-neon">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative neon-border pulse-neon"
+            onClick={() => {
+              toast({
+                title: "Notifications",
+                description: "You have 3 new notifications",
+              });
+              navigate('/my-profile?tab=mail');
+            }}
+          >
             <Bell className="w-5 h-5" />
             <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 bg-destructive text-xs">3</Badge>
           </Button>
@@ -64,7 +110,12 @@ const GameHeader = () => {
           </div>
 
           {/* User Avatar */}
-          <Button variant="ghost" size="icon" className="neon-border">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="neon-border"
+            onClick={() => navigate('/my-profile')}
+          >
             <User className="w-5 h-5" />
           </Button>
         </div>

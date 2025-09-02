@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Play, Users, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
 
 interface UnityGame {
   id: string;
@@ -385,7 +386,17 @@ export const TopUnityGames = () => {
 
                   {/* Play Button Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 bg-black/20">
-                    <Button size="sm" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-white/30">
+                    <Button 
+                      size="sm" 
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-white/30"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast({
+                          title: `Joining ${game.title}`,
+                          description: `Entry range: ${game.entryRange} • ${game.players.toLocaleString()} players online`,
+                        });
+                      }}
+                    >
                       <Play className="w-4 h-4 mr-2" />
                       Join Challenges
                     </Button>

@@ -17,6 +17,7 @@ import { PropsTicker } from "@/components/ticker/PropsTicker";
 import { SuggestedPlayers } from "@/components/lobbies/SuggestedPlayers";
 import { RecentMatches } from "@/components/lobbies/RecentMatches";
 import { OnlinePlayers } from "@/components/lobbies/OnlinePlayers";
+import { toast } from "@/hooks/use-toast";
 
 export default function Lobbies() {
   const { activeTab, rightRailOpen, setRightRailOpen, setCreateChallengeOpen } = useUI();
@@ -24,13 +25,17 @@ export default function Lobbies() {
   const [props, setProps] = useState<LiveProp[]>([]);
 
   const handleAcceptChallenge = (challenge: Challenge) => {
-    // TODO: Implement challenge acceptance
-    console.log("Accepting challenge:", challenge.id);
+    toast({
+      title: "Challenge Accepted!",
+      description: `You've accepted challenge ID: ${challenge.id}`,
+    });
   };
 
   const handleViewChallenge = (challenge: Challenge) => {
-    // TODO: Implement challenge view modal
-    console.log("Viewing challenge:", challenge.id);
+    toast({
+      title: "Challenge Details",
+      description: `Viewing details for challenge ID: ${challenge.id}`,
+    });
   };
 
   // Fetch props data
@@ -88,9 +93,18 @@ export default function Lobbies() {
                 </div>
 
                 <div className="flex justify-center mt-6">
-                  <Button variant="outline" className="bg-card/50 border-border hover:bg-card/80">
-                    Load More Challenges
-                  </Button>
+              <Button
+                variant="outline" 
+                className="bg-card/50 border-border hover:bg-card/80"
+                onClick={() => {
+                  toast({
+                    title: "Loading More Challenges",
+                    description: "Fetching additional challenges...",
+                  });
+                }}
+              >
+                Load More Challenges
+              </Button>
                 </div>
               </section>
             </div>
@@ -103,21 +117,43 @@ export default function Lobbies() {
           </div>
         );
         
-      case 'players':
-        return (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-semibold mb-2">Players Tab</h3>
-            <p className="text-muted-foreground">Player listings coming soon...</p>
-          </div>
-        );
+        case 'players':
+          return (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-semibold mb-2">Players Directory</h3>
+              <p className="text-muted-foreground mb-4">Browse and connect with players from around the world</p>
+              <Button 
+                className="bg-gradient-primary hover:shadow-glow"
+                onClick={() => {
+                  toast({
+                    title: "Coming Soon",
+                    description: "Player directory feature will be available soon!",
+                  });
+                }}
+              >
+                Browse Players
+              </Button>
+            </div>
+          );
         
-      case 'tournaments':
-        return (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-semibold mb-2">Tournaments Tab</h3>
-            <p className="text-muted-foreground">Tournament listings coming soon...</p>
-          </div>
-        );
+        case 'tournaments':
+          return (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-semibold mb-2">Tournament Hub</h3>
+              <p className="text-muted-foreground mb-4">Join competitive tournaments and climb the rankings</p>
+              <Button 
+                className="bg-gradient-primary hover:shadow-glow"
+                onClick={() => {
+                  toast({
+                    title: "Coming Soon",
+                    description: "Tournament listings will be available soon!",
+                  });
+                }}
+              >
+                View Tournaments
+              </Button>
+            </div>
+          );
 
       case 'props':
         return (

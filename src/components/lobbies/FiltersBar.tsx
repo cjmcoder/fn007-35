@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Filter, Search, X } from "lucide-react";
 import { useUI } from "@/store/useUI";
 import { Platform, GameTitle, Rank } from "@/lib/types";
+import { toast } from "@/hooks/use-toast";
 
 export const FiltersBar = () => {
   const { filters, updateFilters, resetFilters } = useUI();
@@ -119,10 +120,28 @@ export const FiltersBar = () => {
 
         {/* Quick Filters */}
         <div className="flex items-center space-x-2 ml-auto">
-          <Badge variant="outline" className="border-neon-cyan text-neon-cyan cursor-pointer hover:bg-neon-cyan/10">
+          <Badge 
+            variant="outline" 
+            className="border-neon-cyan text-neon-cyan cursor-pointer hover:bg-neon-cyan/10 transition-colors"
+            onClick={() => {
+              toast({
+                title: "Filter Applied",
+                description: "Showing only challenges requiring stream",
+              });
+            }}
+          >
             Stream Required
           </Badge>
-          <Badge variant="outline" className="border-neon-purple text-neon-purple cursor-pointer hover:bg-neon-purple/10">
+          <Badge 
+            variant="outline" 
+            className="border-neon-purple text-neon-purple cursor-pointer hover:bg-neon-purple/10 transition-colors"
+            onClick={() => {
+              toast({
+                title: "Filter Applied",
+                description: "Showing only quick matches",
+              });
+            }}
+          >
             Quick Match
           </Badge>
         </div>

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, DollarSign, Clock, Star } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface ChallengeCardProps {
   player: {
@@ -31,6 +32,20 @@ const ChallengeCard = ({ player, game, platform, prizeRange, timePosted }: Chall
     return "bg-neon-cyan text-background";
   };
 
+  const handleAcceptChallenge = () => {
+    toast({
+      title: "Challenge Accepted!",
+      description: `You've accepted ${player.username}'s challenge for ${prizeRange}`,
+    });
+  };
+
+  const handleViewProfile = () => {
+    toast({
+      title: "Player Profile",
+      description: `Viewing ${player.username}'s profile`,
+    });
+  };
+
   return (
     <div className="gaming-card p-6 rounded-xl group">
       <div className="flex items-center justify-between">
@@ -49,7 +64,12 @@ const ChallengeCard = ({ player, game, platform, prizeRange, timePosted }: Chall
           {/* Player Info */}
           <div>
             <div className="flex items-center space-x-2">
-              <h3 className="font-bold text-foreground">{player.username}</h3>
+              <h3 
+                className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                onClick={handleViewProfile}
+              >
+                {player.username}
+              </h3>
               <Badge className={`px-2 py-1 text-xs font-bold ${getRatingColor(player.rating)}`}>
                 {player.rating.toFixed(1)}
               </Badge>
@@ -73,7 +93,10 @@ const ChallengeCard = ({ player, game, platform, prizeRange, timePosted }: Chall
           </div>
 
           {/* Accept Button */}
-          <Button className="bg-gradient-primary hover:shadow-glow transition-all duration-300 group-hover:scale-105">
+          <Button 
+            className="bg-gradient-primary hover:shadow-glow transition-all duration-300 group-hover:scale-105"
+            onClick={handleAcceptChallenge}
+          >
             <Trophy className="w-4 h-4 mr-2" />
             Accept
           </Button>

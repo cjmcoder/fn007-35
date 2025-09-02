@@ -2,8 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Filter, Plus, Gamepad2, Monitor, Smartphone } from "lucide-react";
+import { useUI } from "@/store/useUI";
+import { toast } from "@/hooks/use-toast";
 
 const GameFilters = () => {
+  const { setCreateChallengeOpen } = useUI();
   return (
     <div className="w-full glass-card p-6 rounded-xl">
       <div className="flex flex-wrap items-center gap-4">
@@ -104,7 +107,10 @@ const GameFilters = () => {
         </div>
 
         {/* Create Challenge Button */}
-        <Button className="bg-gradient-secondary hover:shadow-orange px-6">
+        <Button 
+          className="bg-gradient-secondary hover:shadow-orange px-6"
+          onClick={() => setCreateChallengeOpen(true)}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Create Challenge
         </Button>
