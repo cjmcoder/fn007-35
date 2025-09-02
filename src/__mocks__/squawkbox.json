@@ -1,0 +1,46 @@
+[
+  {
+    "id": "msg-1",
+    "channel": "Madden",
+    "user": {
+      "id": "user-1",
+      "name": "SkillMaster23",
+      "rating": 8.7
+    },
+    "text": "LF quick match 50 FC, PS5 only",
+    "createdAt": "2025-01-09T19:05:00Z"
+  },
+  {
+    "id": "msg-2",
+    "channel": "Madden",
+    "user": {
+      "id": "user-6",
+      "name": "GridironPro",
+      "rating": 7.9
+    },
+    "text": "Just posted a challenge for M25, who's ready?",
+    "createdAt": "2025-01-09T19:04:30Z"
+  },
+  {
+    "id": "msg-3",
+    "channel": "UFC",
+    "user": {
+      "id": "user-2",
+      "name": "FightNight",
+      "rating": 9.2
+    },
+    "text": "Elite fighters only, stream required",
+    "createdAt": "2025-01-09T19:04:00Z"
+  },
+  {
+    "id": "msg-4",
+    "channel": "FIFA",
+    "user": {
+      "id": "user-3",
+      "name": "GoalHunter",
+      "rating": 7.8
+    },
+    "text": "Anyone up for FUT? 100 FC entry",
+    "createdAt": "2025-01-09T19:03:30Z"
+  }
+]
