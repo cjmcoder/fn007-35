@@ -1,0 +1,242 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  handle    String   @unique
+  walletFc  Int      @default(0)
+  createdAt DateTime @default(now())
+  
+  // Relations
+  matchesP1 Match[]  @relation("UserAsP1")
+  matchesP2 Match[]  @relation("UserAsP2")
+  stakes    Stake[]
+  
+  @@map("users")
+}
+
+model Tournament {
+  id                    String   @id @default(cuid())
+  name                  String
+  region                String?
+  requiresPrivateServer Boolean  @default(false)
+  startsAt              DateTime
+  endsAt                DateTime
+  rulesetJson           Json?
+  createdAt             DateTime @default(now())
+  
+  // Relations
+  matches               Match[]
+  
+  @@map("tournaments")
+}
+
+model Match {
+  id            String     @id @default(cuid())
+  createdAt     DateTime   @default(now())
+  state         MatchState @default(LOBBY)
+  platform      Platform
+  matchType     MatchType  @default(VERSUS) // VERSUS | SOLO
+  game          GameType
+  region        String?
+
+  // Players (VERSUS) or Solo owner
+  p1Id          String?
+  p2Id          String?
+  p1            User?      @relation("UserAsP1", fields: [p1Id], references: [id])
+  p2            User?      @relation("UserAsP2", fields: [p2Id], references: [id])
+  soloUserId    String?    // set when matchType=SOLO
+
+  tournamentId  String?
+  tournament    Tournament? @relation(fields: [tournamentId], references: [id])
+
+  // Cloud/Private bindings
+  vmId          String?
+  vmHost        String?
+  pteroServerId String?
+
+  // Timings
+  opensAt       DateTime?
+  countdownAt   DateTime?
+  kickoffAt     DateTime?
+  halftimeAt    DateTime?
+  finalAt       DateTime?
+  disputeUntil  DateTime?
+
+  // Money
+  entryFc       Int        @default(0) // wager per player for VERSUS; 0 for SOLO
+  cloudFeeFc    Int        @default(0) // flat fee applied when platform=CLOUD
+  escrowLocked  Boolean    @default(false)
+  rakePercent   Int        @default(10)
+
+  // Relations
+  props         PropMarket[]
+  stakes        Stake[]
+  events        MatchEvent[]
+  
+  @@map("matches")
+}
+
+model PropMarket {
+  id         String     @id @default(cuid())
+  matchId    String
+  match      Match      @relation(fields: [matchId], references: [id])
+  type       String
+  paramsJson Json
+  opensAt    DateTime
+  locksAt    DateTime
+  resolvesAt DateTime?
+  status     PropStatus @default(OPEN)
+  
+  @@map("prop_markets")
+}
+
+model Stake {
+  id        String   @id @default(cuid())
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amountFc  Int
+  createdAt DateTime @default(now())
+  
+  @@map("stakes")
+}
+
+model MatchEvent {
+  id        String   @id @default(cuid())
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id])
+  type      String   // GOAL, KICKOFF, FINAL, LAP_TIME, etc.
+  payload   Json
+  ts        DateTime @default(now())
+  
+  @@map("match_events")
+}
+
+enum MatchState { 
+  LOBBY 
+  READY 
+  IN_PROGRESS 
+  PAUSED 
+  FINAL 
+  RESOLVING 
+  CLOSED 
+}
+
+enum Platform { 
+  CONSOLE 
+  PRIVATE 
+  CLOUD 
+}
+
+enum MatchType { 
+  VERSUS 
+  SOLO 
+}
+
+enum GameType { 
+  PES6 
+  ACC 
+  TEKKEN7 
+  ROCKETLEAGUE 
+  MADDEN 
+  EFOOTBALL 
+  OTHER 
+}
+
+enum PropStatus { 
+  OPEN 
+  LOCKED 
+  RESOLVING 
+  SETTLED 
+  VOID 
+}
+
+enum Mode { 
+  CONSOLE_VERIFIED_STREAM
+  CLOUD_STREAM
+}
+
+enum MatchStatus { 
+  READY
+  LIVE
+  REPORTED
+  VERIFY
+  SETTLED
+  VOID
+}
+
+enum ChallengeStatus { 
+  OPEN
+  PENDING
+  EXPIRED
+}
+
+model Challenge {
+  id           String   @id @default(cuid())
+  creatorId    String
+  gameId       String
+  mode         Mode
+  stakeCents   Int
+  rulesetId    String?
+  region       String
+  eloBand      String
+  status       ChallengeStatus @default(OPEN)
+  expiresAt    DateTime
+  visibility   String   @default("PUBLIC")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("challenges")
+}
+
+model Match_v1 {
+  id           String   @id @default(cuid())
+  gameId       String
+  mode         Mode
+  stakeCents   Int
+  playerAId    String
+  playerBId    String
+  status       MatchStatus @default(READY)
+  escrowLockId String?
+  streamA      String?
+  streamB      String?
+  startBy      DateTime
+  reportBy     DateTime?
+  createdAt    DateTime @default(now())
+  settledAt    DateTime?
+  
+  @@map("matches_new")
+}
+
+model TrustLedger {
+  id         String   @id @default(cuid())
+  userId     String
+  delta      Int
+  reason     String
+  contextId  String?
+  createdAt  DateTime @default(now())
+  
+  @@map("trust_ledger")
+}
+
+model TrustProfile {
+  userId        String  @id
+  score         Int     @default(100)
+  noShowRate    Float   @default(0)
+  disputeRate   Float   @default(0)
+  settleSpeedMs Int     @default(0)
+  updatedAt     DateTime @updatedAt
+  
+  @@map("trust_profiles")
+}

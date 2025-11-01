@@ -1,0 +1,148 @@
+// FLOCKNODE - Simple Authentication Schema
+// This is the current working schema for user auth
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String   @id @default(cuid())
+  email                 String   @unique
+  username              String   @unique
+  displayName           String
+  password              String?   // For simple auth
+  avatarUrl             String?
+  roles                 String   @default("user")
+  trustScore            Float    @default(100.0)
+  tfaEnabled            Boolean  @default(false)
+  tfaSecret             String?
+  isBanned              Boolean  @default(false)
+  
+  // Email verification fields
+  emailVerified         Boolean  @default(false)
+  emailVerificationToken String? @unique
+  emailVerifiedAt       DateTime?
+  marketingConsent      Boolean  @default(false)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  lastLoginAt           DateTime?
+
+  profile               Profile?
+  wallet                Wallet?
+  authProviders         AuthProvider[]
+  refreshTokens         RefreshToken[]
+  matchesHost           Match[]  @relation("MatchHost")
+  matchesOpponent       Match[]  @relation("MatchOpponent")
+  transactions          FcTransaction[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  bio         String?
+  location    String?
+  timezone    String?
+  preferences String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Wallet {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  availableFc     Float    @default(0.0)
+  lockedFc        Float    @default(0.0)
+  totalDeposited  Float    @default(0.0)
+  totalWithdrawn  Float    @default(0.0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    FcTransaction[]
+
+  @@map("wallets")
+}
+
+model AuthProvider {
+  id          String   @id @default(cuid())
+  userId      String
+  provider    String
+  providerId  String
+  accessToken String?
+  refreshToken String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@map("auth_providers")
+}
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+  userId      String
+  token       String   @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Match {
+  id              String   @id @default(cuid())
+  hostId          String
+  opponentId      String?
+  game            String
+  mode            String
+  stake           Float
+  status          String   @default("pending")
+  serverId        String?
+  serverRegion    String?
+  hostScore       Int?
+  opponentScore   Int?
+  winnerId        String?
+  hostProofUrl    String?
+  opponentProofUrl String?
+  resolutionNotes String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  expiresAt       DateTime?
+
+  host            User     @relation("MatchHost", fields: [hostId], references: [id])
+  opponent        User?    @relation("MatchOpponent", fields: [opponentId], references: [id])
+
+  @@map("matches")
+}
+
+model FcTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  walletId    String
+  type        String
+  amount      Float
+  balanceBefore Float
+  balanceAfter Float
+  metadata    String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+
+  @@map("fc_transactions")
+}
+

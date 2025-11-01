@@ -1,0 +1,299 @@
+// FLOCKNODE Development Database Schema (SQLite)
+// This is a simplified version for local development
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// USER MANAGEMENT
+// =============================================================================
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  username    String   @unique
+  displayName String
+  avatarUrl   String?
+  roles       String   @default("user")
+  trustScore  Float    @default(100.0)
+  tfaEnabled  Boolean  @default(false)
+  tfaSecret   String?
+  isBanned    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastLoginAt DateTime?
+
+  // Relations
+  profile     Profile?
+  wallet      Wallet?
+  authProviders AuthProvider[]
+  refreshTokens RefreshToken[]
+  matchesHost Match[] @relation("MatchHost")
+  matchesOpponent Match[] @relation("MatchOpponent")
+  transactions FcTransaction[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  bio         String?
+  location    String?
+  timezone    String?
+  preferences String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model AuthProvider {
+  id          String   @id @default(cuid())
+  userId      String
+  provider    String   // 'google', 'twitch', 'discord'
+  providerId  String
+  accessToken String?
+  refreshToken String?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@map("auth_providers")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// =============================================================================
+// WALLET SYSTEM
+// =============================================================================
+
+model Wallet {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  availableFc     Decimal  @default(0.0) @db.Decimal(18,2)
+  lockedFc        Decimal  @default(0.0) @db.Decimal(18,2)
+  totalDeposited  Decimal  @default(0.0) @db.Decimal(18,2)
+  totalWithdrawn  Decimal  @default(0.0) @db.Decimal(18,2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    FcTransaction[]
+
+  @@map("wallets")
+}
+
+model FcTransaction {
+  id              String   @id @default(uuid())
+  userId          String
+  walletId        String
+  type            String   // 'DEPOSIT', 'WITHDRAWAL', 'TRANSFER', 'WAGER', 'WIN', 'LOSS', 'PLATFORM_FEE'
+  state           String   // 'PENDING', 'COMPLETED', 'FAILED'
+  amountFc        Decimal  @db.Decimal(18,2)
+  balanceAfterFc  Decimal? @db.Decimal(18,2)
+  refType         String?  // 'PAYPAL_ORDER', 'MATCH', 'TRANSFER'
+  refId           String?
+  idempotencyKey  String?
+  metadata        Json?    // Structured metadata instead of string
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet          Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@unique([refType, refId, type], name: "unique_match_payout")
+  @@index([userId, createdAt])
+  @@index([refType, refId])
+  @@map("fc_transactions")
+}
+
+// =============================================================================
+// MATCH SYSTEM - DUAL MODE (VERIFIED_STREAM + PRIVATE_SERVER)
+// =============================================================================
+
+enum MatchMode { 
+  VERIFIED_STREAM 
+  PRIVATE_SERVER 
+}
+
+enum MatchState { 
+  PENDING 
+  READY_CHECK 
+  ACTIVE 
+  COMPLETE 
+  DISPUTED 
+  CANCELLED 
+}
+
+enum ChecklistState { 
+  PENDING 
+  PASS 
+  FAIL 
+}
+
+enum StreamProvider { 
+  TWITCH 
+  YOUTUBE 
+  KICK 
+}
+
+model Match {
+  id            String      @id @default(uuid())
+  mode          MatchMode
+  hostId        String
+  oppId         String?
+  gameId        String
+  rulesetId     String
+  region        String?
+  // Money-like: use Decimal with precision/scale for CockroachDB
+  entryFc       Decimal     @db.Decimal(18,2)
+  // Platform rake (percent). Fixed at 10 by policy, but configurable if needed.
+  rakePercent   Int         @default(10)
+  state         MatchState  @default(PENDING)
+  startAt       DateTime?
+  completeAt    DateTime?
+  winnerId      String?
+  // Structured blobs — use Json, not String
+  checklist     Json?       // mode-specific checklist snapshot
+  signals       Json?       // overlay/OCR/adminhook signals timeline (compact)
+  serverId      String?     // link to external orchestrator/panel id
+  serverInfo    Json?       // ip/port/password/identifier (PRIVATE_SERVER)
+  streamLinks   Json?       // { p1:{provider,channelId}, p2:{...}, health }
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  host          User        @relation("MatchHost", fields: [hostId], references: [id], onDelete: Cascade)
+  opponent      User?       @relation("MatchOpponent", fields: [oppId], references: [id], onDelete: Cascade)
+  serverReservation ServerReservation? @relation(fields: [serverId], references: [id])
+  streamPair    StreamPair?
+  disputes      Dispute[]
+  proofs        Proof[]
+
+  @@index([mode, state, createdAt])
+  @@index([hostId, createdAt])
+  @@index([oppId, createdAt])
+  @@index([gameId, createdAt])
+  @@map("matches")
+}
+
+// Normalized streams (recommended if you'll query by provider/channel)
+model StreamPair {
+  id         String         @id @default(uuid())
+  matchId    String         @unique
+  p1Provider StreamProvider?
+  p1Channel  String?
+  p2Provider StreamProvider?
+  p2Channel  String?
+  liveOkP1   Boolean        @default(false)
+  liveOkP2   Boolean        @default(false)
+  titleOkP1  Boolean        @default(false)
+  titleOkP2  Boolean        @default(false)
+  bitrateP1  Int?
+  bitrateP2  Int?
+  fpsP1      Int?
+  fpsP2      Int?
+  updatedAt  DateTime       @updatedAt
+
+  match      Match          @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  @@index([p1Provider, p1Channel])
+  @@index([p2Provider, p2Channel])
+  @@map("stream_pairs")
+}
+
+// Normalized server reservations (PRIVATE_SERVER)
+model ServerReservation {
+  id            String   @id @default(uuid())
+  matchId       String   @unique
+  gameSlug      String
+  pteroServerId String   // Pterodactyl numeric id or uuid/identifier
+  hostNode      String
+  ip            String
+  port          Int
+  password      String?
+  status        String   // RESERVED|STARTING|READY|ACTIVE|STOPPING|RELEASED|FAILED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  match         Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  @@index([status, updatedAt])
+  @@map("server_reservations")
+}
+
+model Proof {
+  id            String      @id @default(uuid())
+  matchId       String
+  userId        String
+  type          String      // 'screenshot', 'vod', 'admin_log'
+  fileKey       String
+  fileUrl       String?
+  createdAt     DateTime    @default(now())
+
+  // Relations
+  match         Match       @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@map("proofs")
+}
+
+model Dispute {
+  id            String      @id @default(uuid())
+  matchId       String
+  openedBy      String      // userId who opened dispute
+  reason        String
+  notes         String?
+  status        String      @default("OPEN") // OPEN, RESOLVED, CLOSED
+  resolution    String?     // PAYOUT, REFUND, VOID
+  resolvedBy    String?     // admin userId
+  resolvedAt    DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  match         Match       @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@map("disputes")
+}
+
+// =============================================================================
+// AUDIT LOGGING
+// =============================================================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorType   String   // 'USER', 'SYSTEM', 'ADMIN'
+  actorId     String?
+  action      String
+  entityType  String
+  entityId    String?
+  meta        String?
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
+}

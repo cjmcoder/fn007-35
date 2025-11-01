@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # Assetto Corsa Competizione Server
+  acc-server:
+    image: ghcr.io/flocknode/acc:latest
+    container_name: flocknode-acc-${MATCH_ID}
+    environment:
+      - MATCH_ID=${MATCH_ID}
+      - ADMIN_HOOK_URL=${ADMIN_HOOK_URL}
+      - ADMIN_HOOK_SECRET=${ADMIN_HOOK_SECRET}
+      - GAME_PORT=9231
+      - SERVER_NAME=FLOCKNODE-ACC-${MATCH_ID}
+      - MAX_PLAYERS=2
+      - PASSWORD=${MATCH_ID}
+    ports:
+      - "9231:9231/udp"
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+    command: >
+      sh -c "
+        chmod +x /app/admin-hook.sh &&
+        /app/admin-hook.sh &
+        ./acc-server --config /app/config/server_cfg.ini
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "netstat", "-ln", "|", "grep", ":9231"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # PES6 Server
+  pes6-server:
+    image: ghcr.io/flocknode/pes6:latest
+    container_name: flocknode-pes6-${MATCH_ID}
+    environment:
+      - MATCH_ID=${MATCH_ID}
+      - ADMIN_HOOK_URL=${ADMIN_HOOK_URL}
+      - ADMIN_HOOK_SECRET=${ADMIN_HOOK_SECRET}
+      - GAME_PORT=3658
+      - SERVER_NAME=FLOCKNODE-PES6-${MATCH_ID}
+      - MAX_PLAYERS=2
+      - PASSWORD=${MATCH_ID}
+    ports:
+      - "3658:3658/udp"
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+    command: >
+      sh -c "
+        chmod +x /app/admin-hook.sh &&
+        /app/admin-hook.sh &
+        ./pes6-server --config /app/config/server.ini
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "netstat", "-ln", "|", "grep", ":3658"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # FIFA 24 Server
+  fifa24-server:
+    image: ghcr.io/flocknode/fifa24:latest
+    container_name: flocknode-fifa24-${MATCH_ID}
+    environment:
+      - MATCH_ID=${MATCH_ID}
+      - ADMIN_HOOK_URL=${ADMIN_HOOK_URL}
+      - ADMIN_HOOK_SECRET=${ADMIN_HOOK_SECRET}
+      - GAME_PORT=7777
+      - SERVER_NAME=FLOCKNODE-FIFA24-${MATCH_ID}
+      - MAX_PLAYERS=2
+      - PASSWORD=${MATCH_ID}
+    ports:
+      - "7777:7777/udp"
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+    command: >
+      sh -c "
+        chmod +x /app/admin-hook.sh &&
+        /app/admin-hook.sh &
+        ./fifa24-server --config /app/config/server.json
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "netstat", "-ln", "|", "grep", ":7777"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  default:
+    name: flocknode-game-network
+    driver: bridge
+
+
+
+
+

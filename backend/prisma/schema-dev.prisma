@@ -1,0 +1,175 @@
+// FLOCKNODE Development Database Schema (SQLite)
+// This is a simplified version for local development
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// USER MANAGEMENT
+// =============================================================================
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  username    String   @unique
+  displayName String
+  avatarUrl   String?
+  roles       String[] @default(["user"])
+  trustScore  Float    @default(100.0)
+  tfaEnabled  Boolean  @default(false)
+  tfaSecret   String?
+  isBanned    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastLoginAt DateTime?
+
+  // Relations
+  profile     Profile?
+  wallet      Wallet?
+  authProviders AuthProvider[]
+  refreshTokens RefreshToken[]
+  matches     Match[] @relation("MatchHost")
+  transactions FcTransaction[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  bio         String?
+  location    String?
+  timezone    String?
+  preferences Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model AuthProvider {
+  id          String   @id @default(cuid())
+  userId      String
+  provider    String   // 'google', 'twitch', 'discord'
+  providerId  String
+  accessToken String?
+  refreshToken String?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@map("auth_providers")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// =============================================================================
+// WALLET SYSTEM
+// =============================================================================
+
+model Wallet {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  availableFc     Float    @default(0.0)
+  lockedFc        Float    @default(0.0)
+  totalDeposited  Float    @default(0.0)
+  totalWithdrawn  Float    @default(0.0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    FcTransaction[]
+
+  @@map("wallets")
+}
+
+model FcTransaction {
+  id              String   @id @default(cuid())
+  userId          String
+  walletId        String
+  type            String   // 'DEPOSIT', 'WITHDRAWAL', 'TRANSFER', 'WAGER', 'WIN', 'LOSS'
+  state           String   // 'PENDING', 'COMPLETED', 'FAILED'
+  amountFc        Float
+  balanceAfterFc  Float?
+  refType         String?  // 'PAYPAL_ORDER', 'MATCH', 'TRANSFER'
+  refId           String?
+  idempotencyKey  String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet          Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@map("fc_transactions")
+}
+
+// =============================================================================
+// MATCH SYSTEM
+// =============================================================================
+
+model Match {
+  id          String   @id @default(cuid())
+  hostId      String
+  oppId       String?
+  gameId      String
+  platform   String
+  entryFc     Float
+  state       String   // 'PENDING', 'READY_CHECK', 'READY', 'ACTIVE', 'COMPLETE', 'DISPUTED'
+  result      String?  // 'HOST_WIN', 'OPP_WIN', 'DRAW', 'DISPUTED'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  host        User     @relation("MatchHost", fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@map("matches")
+}
+
+// =============================================================================
+// AUDIT LOGGING
+// =============================================================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorType   String   // 'USER', 'SYSTEM', 'ADMIN'
+  actorId     String?
+  action      String
+  entityType  String
+  entityId    String?
+  meta        Json?
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+
+
+
+
