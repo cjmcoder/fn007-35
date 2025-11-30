@@ -14,3 +14,6 @@ export default function Timer({ target, onExpire }: { target: string; onExpire?:
   return <span>{sec}s</span>;
 }
 
+
+
+

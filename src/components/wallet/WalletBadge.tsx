@@ -13,14 +13,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Wallet, Plus, DollarSign, ChevronDown, CreditCard, Smartphone } from "lucide-react";
+import { Wallet, Plus, DollarSign, ChevronDown, CreditCard, Smartphone, ExternalLink } from "lucide-react";
 import { useWallet } from "@/store/useWallet";
 import { useUI } from "@/store/useUI";
+import { useNavigate } from "react-router-dom";
 import { formatFC } from "@/lib/fncMath";
 
 export const WalletBadge = () => {
   const { wallet, isConnected, isConnecting, connectWallet } = useWallet();
   const { setAddFCModalOpen } = useUI();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState("25");
   const [customAmount, setCustomAmount] = useState("");
@@ -56,6 +58,23 @@ export const WalletBadge = () => {
       </DropdownMenuTrigger>
       
       <DropdownMenuContent align="end" className="w-96 bg-card border-border p-0">
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">Wallet</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                navigate('/wallet');
+                setIsOpen(false);
+              }}
+              className="text-xs"
+            >
+              <ExternalLink className="w-3 h-3 mr-1" />
+              Full Wallet
+            </Button>
+          </div>
+        </div>
         <Tabs defaultValue="deposit" className="w-full">
           <div className="px-4 pt-4">
             <TabsList className="grid w-full grid-cols-2">

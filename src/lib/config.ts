@@ -15,11 +15,15 @@ export const STRIPE_CONFIG = {
   SECRET_KEY: import.meta.env.VITE_STRIPE_SECRET_KEY || '', // Only for server-side
 } as const;
 
-// Supabase Configuration
-export const SUPABASE_CONFIG = {
-  URL: import.meta.env.VITE_SUPABASE_URL || '',
-  ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
-  SERVICE_ROLE_KEY: import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '', // Only for server-side
+// CockroachDB Configuration
+export const COCKROACHDB_CONFIG = {
+  URL: import.meta.env.VITE_DATABASE_URL || '',
+  HOST: import.meta.env.VITE_DB_HOST || 'localhost',
+  PORT: import.meta.env.VITE_DB_PORT || '26257',
+  DATABASE: import.meta.env.VITE_DB_NAME || 'flocknode',
+  USER: import.meta.env.VITE_DB_USER || 'root',
+  PASSWORD: import.meta.env.VITE_DB_PASSWORD || '',
+  SSL: import.meta.env.VITE_DB_SSL === 'true',
 } as const;
 
 // Redis Configuration
@@ -76,8 +80,8 @@ export const ENV = {
 export const validateConfig = () => {
   const requiredVars = {
     // Add required environment variables here
-    // 'VITE_SUPABASE_URL': SUPABASE_CONFIG.URL,
-    // 'VITE_SUPABASE_ANON_KEY': SUPABASE_CONFIG.ANON_KEY,
+    // 'VITE_DATABASE_URL': COCKROACHDB_CONFIG.URL,
+    // 'VITE_DB_HOST': COCKROACHDB_CONFIG.HOST,
   };
 
   const missing = Object.entries(requiredVars)

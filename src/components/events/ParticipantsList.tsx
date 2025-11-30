@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -11,32 +11,37 @@ interface ParticipantsListProps {
   event: GameEvent;
 }
 
-// Mock participants data
-const generateParticipants = (count: number) => {
-  const names = [
-    "ProGamer2024", "SkillMaster", "ChampionX", "ElitePlayer", "GameWizard",
-    "VictorySeeker", "TourneyKing", "CompetePro", "DigitalAce", "GameLegend",
-    "PixelWarrior", "CyberChamp", "GameTitan", "VirtualHero", "EsportsStar"
-  ];
-  
-  return Array.from({ length: count }, (_, i) => ({
-    id: `participant-${i}`,
-    name: names[i % names.length] + (i > names.length - 1 ? (i + 1) : ""),
-    rating: Math.floor(Math.random() * 500) + 1500,
-    rank: Math.floor(Math.random() * 10) + 1,
-    gamesPlayed: Math.floor(Math.random() * 200) + 50,
-    winRate: Math.floor(Math.random() * 40) + 60,
-    isVerified: Math.random() > 0.7,
-    joinedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-  }));
-};
-
 export function ParticipantsList({ event }: ParticipantsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const participants = generateParticipants(event.currentParticipants);
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch real participants from backend
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      try {
+        setIsLoading(true);
+        // TODO: Replace with real endpoint when available
+        // const response = await fetch(`/api/events/${event.id}/participants`);
+        // if (!response.ok) throw new Error('Failed to fetch participants');
+        // const data = await response.json();
+        // setParticipants(data.participants || []);
+        setParticipants([]); // Empty until backend endpoint is ready
+      } catch (error) {
+        console.error('Failed to fetch participants:', error);
+        setParticipants([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (event.id) {
+      fetchParticipants();
+    }
+  }, [event.id]);
 
   const filteredParticipants = participants.filter(participant =>
-    participant.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (participant.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getRatingColor = (rating: number) => {

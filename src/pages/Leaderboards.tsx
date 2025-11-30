@@ -18,7 +18,7 @@ import { Home, Target, MessageSquare } from "lucide-react";
 import { FlockTubeClock } from "@/components/FlockTubeClock";
 import { calculateLeaderboardRewards } from "@/lib/fncMath";
 import { useUI } from "@/store/useUI";
-import challengesData from "@/__mocks__/challenges.json";
+// Removed mock data import - fetch from real API instead
 
 const allGames: GameTitle[] = [
   "Madden","UFC","FIFA","NHL","NBA","UNDISPUTED","F1","TENNIS","MLB","CustomUnity"
@@ -80,7 +80,13 @@ const rankBadge = (rank: number) => {
 
 const Leaderboards: React.FC = () => {
   const { rightRailOpen, setRightRailOpen } = useUI();
-  const challenges = challengesData as any[];
+  // TODO: Fetch real challenges from backend API
+  const [challenges, setChallenges] = useState<any[]>([]);
+  useEffect(() => {
+    // TODO: Replace with real endpoint when available
+    // fetch('/api/challenges').then(r => r.json()).then(d => setChallenges(d.challenges || []));
+    setChallenges([]); // Empty until backend endpoint is ready
+  }, []);
   
   usePageSEO(
     "Leaderboards | FLOCKNODE",
@@ -98,7 +104,7 @@ const Leaderboards: React.FC = () => {
     return samplePlayers
       .filter(p => (game === "All" ? true : p.game === game))
       .filter(p => (platform === "All" ? true : p.platform === platform))
-      .filter(p => (q ? p.name.toLowerCase().includes(q.toLowerCase()) : true))
+      .filter(p => (q ? (p.name || '').toLowerCase().includes(q.toLowerCase()) : true))
       .sort((a,b) => b.rating - a.rating)
       .slice(0, 100);
   }, [game, platform, q]);

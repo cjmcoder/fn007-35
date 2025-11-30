@@ -20,7 +20,7 @@ const topUnityGames: UnityGame[] = [
     id: "unity-1",
     title: "Arena Warriors",
     rank: 1,
-    imageUrl: "/lovable-uploads/934bd6df-9bca-4fb1-8eed-c03afc3fa032.png",
+    imageUrl: "/placeholder.svg",
     players: 2547,
     challenges: 156,
     entryRange: "25-500 FC",
@@ -30,7 +30,7 @@ const topUnityGames: UnityGame[] = [
     id: "unity-2", 
     title: "Speed Trials",
     rank: 2,
-    imageUrl: "/lovable-uploads/934bd6df-9bca-4fb1-8eed-c03afc3fa032.png",
+    imageUrl: "/placeholder.svg",
     players: 1823,
     challenges: 89,
     entryRange: "10-200 FC",
@@ -40,7 +40,7 @@ const topUnityGames: UnityGame[] = [
     id: "unity-3",
     title: "Puzzle Masters",
     rank: 3,
-    imageUrl: "/lovable-uploads/934bd6df-9bca-4fb1-8eed-c03afc3fa032.png",
+    imageUrl: "/placeholder.svg",
     players: 1456,
     challenges: 67,
     entryRange: "5-100 FC",
@@ -50,7 +50,7 @@ const topUnityGames: UnityGame[] = [
     id: "unity-4",
     title: "Strategy Legends",
     rank: 4,
-    imageUrl: "/lovable-uploads/934bd6df-9bca-4fb1-8eed-c03afc3fa032.png",
+    imageUrl: "/placeholder.svg",
     players: 1289,
     challenges: 45,
     entryRange: "50-1000 FC",
@@ -60,7 +60,7 @@ const topUnityGames: UnityGame[] = [
     id: "unity-5",
     title: "Reflex Rush",
     rank: 5,
-    imageUrl: "/lovable-uploads/934bd6df-9bca-4fb1-8eed-c03afc3fa032.png",
+    imageUrl: "/placeholder.svg",
     players: 987,
     challenges: 34,
     entryRange: "15-300 FC",
@@ -272,7 +272,7 @@ export const TopUnityGames = () => {
   return (
     <div className="relative mb-8 group">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold gradient-text">Top 5 Unity Games</h2>
+        <h2 className="text-2xl font-bold gradient-text">Top 5 Games</h2>
         
         <div className="flex space-x-2">
           <Button

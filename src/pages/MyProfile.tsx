@@ -6,6 +6,7 @@ import Seo from "@/components/Seo";
 
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { EnhancedWalletPanel } from "@/components/profile/EnhancedWalletPanel";
+import { EnhancedProfile } from "@/components/profile/EnhancedProfile";
 import { ActivityFeed } from "@/components/profile/ActivityFeed";
 import { MatchPerformanceStats } from "@/components/profile/MatchPerformanceStats";
 import { ChallengesEventsSection } from "@/components/profile/ChallengesEventsSection";
@@ -112,17 +113,8 @@ export default function MyProfile() {
 
               {/* Overview Tab - Main Dashboard */}
               <TabsContent value="overview" className="mt-4 lg:mt-6 space-y-4 lg:space-y-6">
-                {/* Match Performance Stats */}
-                <MatchPerformanceStats />
-                
-                {/* Challenges & Events */}
-                <ChallengesEventsSection />
-                
-                {/* Activity Feed */}
-                <ActivityFeed />
-                
-                {/* Support Quick Links */}
-                <SupportQuickLinks />
+                {/* Enhanced Profile Component */}
+                <EnhancedProfile />
               </TabsContent>
 
               {/* Matches Tab */}

@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CreditCard, DollarSign, Bitcoin, Building2 } from "lucide-react";
+import { EnhancedUSDCWithdrawalForm } from "@/components/payment/EnhancedUSDCWithdrawalForm";
+import { toast } from "@/hooks/use-toast";
 
 interface Balances {
   fc: number;
@@ -40,8 +42,24 @@ export const WithdrawalModal = ({ open, onOpenChange, balances }: WithdrawalModa
   }, []);
 
   const handleWithdrawal = () => {
-    // Handle withdrawal logic
+    // Withdrawal logic now handled by USDCWithdrawalForm
     onOpenChange(false);
+  };
+
+  const handleWithdrawalSuccess = () => {
+    toast({
+      title: 'Withdrawal Initiated!',
+      description: 'USDC will arrive in your wallet within 30 seconds',
+    });
+    onOpenChange(false);
+  };
+
+  const handleWithdrawalError = (message: string) => {
+    toast({
+      title: 'Withdrawal Failed',
+      description: message,
+      variant: 'destructive',
+    });
   };
 
   return (
@@ -91,67 +109,12 @@ export const WithdrawalModal = ({ open, onOpenChange, balances }: WithdrawalModa
             </div>
           </Card>
 
-          {/* Withdrawal Amount */}
-          <div className="space-y-2">
-            <Label htmlFor="withdrawal-amount">Withdrawal Amount</Label>
-            <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="withdrawal-amount"
-                type="number"
-                placeholder="0.00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="pl-10 bg-muted/50"
-                max={balances?.fc || 0}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Maximum withdrawal: {balances?.fc || 0} FC
-            </p>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="space-y-2">
-            <Label>Cash Out Method</Label>
-            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-              <SelectTrigger className="bg-muted/50">
-                <SelectValue placeholder="Choose cash out method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="paypal">
-                  <div className="flex items-center space-x-2">
-                    <CreditCard className="w-4 h-4" />
-                    <span>Cash Out to PayPal</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="crypto">
-                  <div className="flex items-center space-x-2">
-                    <Bitcoin className="w-4 h-4" />
-                    <span>Send to Crypto Wallet</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="bank">
-                  <div className="flex items-center space-x-2">
-                    <Building2 className="w-4 h-4" />
-                    <span>Bank Transfer</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Confirmation */}
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="confirm-withdrawal"
-              checked={confirmed}
-              onCheckedChange={(checked) => setConfirmed(checked as boolean)}
-            />
-            <Label htmlFor="confirm-withdrawal" className="text-sm">
-              I understand Boost Credits and FNC cannot be withdrawn.
-            </Label>
-          </div>
+          {/* Enhanced USDC Withdrawal Form */}
+          <EnhancedUSDCWithdrawalForm
+            currentFcBalance={balances?.fc || 0}
+            onSuccess={handleWithdrawalSuccess}
+            onError={handleWithdrawalError}
+          />
 
           {/* Notice */}
           <Card className="p-3 bg-accent/10 border-accent/30">
@@ -169,14 +132,7 @@ export const WithdrawalModal = ({ open, onOpenChange, balances }: WithdrawalModa
             </p>
           </div>
 
-          {/* Action Button */}
-          <Button 
-            onClick={handleWithdrawal}
-            disabled={!amount || !paymentMethod || !confirmed}
-            className="w-full bg-gradient-primary hover:opacity-80 text-base py-6"
-          >
-            Cash Out Now
-          </Button>
+          {/* Withdrawal handled by USDCWithdrawalForm */}
 
           {/* Compliance */}
           <div className="text-xs text-muted-foreground text-center space-y-1">

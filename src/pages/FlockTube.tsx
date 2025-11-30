@@ -12,7 +12,7 @@ import { SkillStatsModal } from "@/components/modals/SkillStatsModal";
 import { Seo } from "@/components/Seo";
 import { SkillStatsGrid } from "@/components/common/SkillStatsGrid";
 import { useSearchParams } from "react-router-dom";
-import challengesData from "@/__mocks__/challenges.json";
+// Removed mock data import - fetch from real API instead
 
 interface LiveStream {
   id: string;
@@ -38,47 +38,12 @@ interface SideProp {
   odds: string;
 }
 
-// Mock data
-const liveStreams: LiveStream[] = [
-  {
-    id: "1",
-    matchId: "M001-2024-001",
-    player1: { name: "ProGamer_X", rank: "Elite", rating: 1850 },
-    player2: { name: "SkillMaster", rank: "Pro", rating: 1720 },
-    game: "Madden NFL 25",
-    wagerAmount: 500,
-    currentScore: "14-7",
-    spectatorCount: 342,
-    streamUrl: "https://twitch.tv/embed/channel1",
-    thumbnailUrl: "/placeholder.svg",
-    status: 'live'
-  },
-  {
-    id: "2",
-    matchId: "M002-2024-002",
-    player1: { name: "UFC_Legend", rank: "Elite", rating: 1920 },
-    player2: { name: "Fighter_Pro", rank: "Pro", rating: 1680 },
-    game: "UFC 5",
-    wagerAmount: 250,
-    spectatorCount: 158,
-    streamUrl: "https://youtube.com/embed/channel2",
-    thumbnailUrl: "/placeholder.svg",
-    status: 'live'
-  },
-  {
-    id: "3",
-    matchId: "M003-2024-003",
-    player1: { name: "HoopsKing", rank: "Pro", rating: 1650 },
-    player2: { name: "CourtVision", rank: "Elite", rating: 1780 },
-    game: "NBA 2K25",
-    wagerAmount: 100,
-    currentScore: "45-38",
-    spectatorCount: 89,
-    streamUrl: "https://twitch.tv/embed/channel3",
-    thumbnailUrl: "/placeholder.svg",
-    status: 'live'
-  }
-];
+// Removed mock live streams data - fetch from real API instead
+// TODO: Fetch real live streams from backend
+// const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
+// useEffect(() => {
+//   fetch('/api/streams/live').then(r => r.json()).then(d => setLiveStreams(d.streams || []));
+// }, []);
 
 export default function FlockTube() {
   const [searchParams] = useSearchParams();
@@ -90,7 +55,12 @@ export default function FlockTube() {
   const [selectedProp, setSelectedProp] = useState<LiveProp | null>(null);
   const [activeTab, setActiveTab] = useState<'live' | 'stats'>('live');
   const [skillProps, setSkillProps] = useState<LiveProp[]>([]);
-  const challenges = challengesData as any[];
+  // TODO: Fetch real challenges from backend API
+  // const [challenges, setChallenges] = useState<any[]>([]);
+  // useEffect(() => {
+  //   fetch('/api/challenges').then(r => r.json()).then(d => setChallenges(d.challenges || []));
+  // }, []);
+  const challenges: any[] = []; // Empty until backend endpoint is ready
 
   // Fetch skill props data
   useEffect(() => {
@@ -121,9 +91,9 @@ export default function FlockTube() {
   const filteredStreams = liveStreams.filter(stream => {
     const matchesGame = selectedGame === 'All' || stream.game === selectedGame;
     const matchesSearch = searchQuery === '' || 
-      stream.player1.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stream.player2.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stream.matchId.toLowerCase().includes(searchQuery.toLowerCase());
+      (stream.player1?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (stream.player2?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (stream.matchId || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesGame && matchesSearch;
   });
 

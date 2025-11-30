@@ -141,7 +141,7 @@ export function EventDetailModal({ event, open, onClose, onJoin }: EventDetailMo
               <Card className="p-4 bg-card/50">
                 <h4 className="font-semibold mb-2">Event Description</h4>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {event.description || `Join this exciting ${event.game} tournament featuring ${event.format.toLowerCase()} competition. Test your skills against players from around the world and compete for the ${event.prizePool.toLocaleString()} FC prize pool.`}
+                  {event.description || `Join this exciting ${event.game} tournament featuring ${(event.format || '').toLowerCase()} competition. Test your skills against players from around the world and compete for the ${event.prizePool.toLocaleString()} FC prize pool.`}
                 </p>
               </Card>
 

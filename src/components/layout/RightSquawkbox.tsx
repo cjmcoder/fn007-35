@@ -1,5 +1,9 @@
-import { SquawkboxComponent } from "@/components/common/SquawkboxComponent";
+import { LiveSquawkbox } from "@/components/squawkbox/LiveSquawkbox";
 
 export const RightSquawkbox = () => {
-  return <SquawkboxComponent variant="sidebar" />;
+  return (
+    <div className="h-full">
+      <LiveSquawkbox className="h-full" />
+    </div>
+  );
 };

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Wallet } from '@/lib/types';
+import { walletApi } from '@/lib/api';
 
 interface WalletState {
   wallet: Wallet;
@@ -15,26 +16,55 @@ interface WalletState {
 
 export const useWallet = create<WalletState>((set, get) => ({
   wallet: {
-    fc: 1250,
+    fc: 0,
     lockedFC: 0
   },
-  isConnected: true, // Auto-connected for demo
+  isConnected: false,
   isConnecting: false,
   
   connectWallet: async () => {
     set({ isConnecting: true });
     
-    // Mock MetaMask Embedded connection
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    set({ 
-      isConnected: true, 
-      isConnecting: false,
-      wallet: {
-        fc: 1250,
-        lockedFC: 0
+    try {
+      // Get real wallet balance from production API
+      // TODO: Get userId from auth context
+      const userId = localStorage.getItem('userId') || '';
+      if (!userId) {
+        throw new Error('User ID not found');
       }
-    });
+      
+      const response = await fetch(`/api/wallet/${userId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch wallet: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      // Parse wallet response from backend
+      // Backend returns balances in minor units, convert to FC
+      const fcBalance = data.balances?.find((b: any) => b.currency === 'FC');
+      const fcAmount = fcBalance ? parseFloat(fcBalance.balanceMinor || '0') / 100 : 0;
+      
+      set({ 
+        isConnected: true, 
+        isConnecting: false,
+        wallet: {
+          fc: fcAmount,
+          lockedFC: data.lockedFC || 0
+        }
+      });
+    } catch (error) {
+      console.error('Failed to fetch wallet balance:', error);
+      set({ 
+        isConnected: false, 
+        isConnecting: false,
+        wallet: {
+          fc: 0,
+          lockedFC: 0
+        }
+      });
+      throw error;
+    }
   },
   
   disconnectWallet: () => {
@@ -45,18 +75,14 @@ export const useWallet = create<WalletState>((set, get) => ({
   },
   
   addFC: async (usdAmount: number) => {
-    // Mock credit card processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const fcToAdd = usdAmount * 100; // $1 = 100 FC
-    const currentWallet = get().wallet;
-    
-    set({
-      wallet: {
-        ...currentWallet,
-        fc: currentWallet.fc + fcToAdd
-      }
-    });
+    // Deposit is handled by deposit modals which redirect to Stripe/PayPal
+    // After successful payment, refresh wallet balance
+    try {
+      await get().connectWallet();
+    } catch (error) {
+      console.error('Failed to refresh wallet after deposit:', error);
+      throw error;
+    }
   },
   
   

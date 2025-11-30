@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -13,17 +13,29 @@ import { EventDetailModal } from "@/components/events/EventDetailModal";
 import { MessageSquare, Calendar, List, Search, Trophy, Filter } from "lucide-react";
 import { useUI } from "@/store/useUI";
 import { cn } from "@/lib/utils";
-import { mockEvents } from "@/mocks/eventsApi";
+// Removed mock events import - fetch from real API instead
 import type { GameEvent } from "@/lib/types";
-import challengesData from "@/__mocks__/challenges.json";
+// Removed mock data import - fetch from real API instead
 
 export default function Events() {
   const { rightRailOpen, setRightRailOpen } = useUI();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'my-events' | 'past' | 'stats'>('upcoming');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedEvent, setSelectedEvent] = useState<GameEvent | null>(null);
-  const [events] = useState<GameEvent[]>(mockEvents);
-  const challenges = challengesData as any[];
+  // TODO: Fetch real events from backend API
+  const [events, setEvents] = useState<GameEvent[]>([]);
+  useEffect(() => {
+    // TODO: Replace with real endpoint when available
+    // fetch('/api/events').then(r => r.json()).then(d => setEvents(d.events || []));
+    setEvents([]); // Empty until backend endpoint is ready
+  }, []);
+  // TODO: Fetch real challenges from backend API
+  const [challenges, setChallenges] = useState<any[]>([]);
+  useEffect(() => {
+    // TODO: Replace with real endpoint when available
+    // fetch('/api/challenges').then(r => r.json()).then(d => setChallenges(d.challenges || []));
+    setChallenges([]); // Empty until backend endpoint is ready
+  }, []);
 
   const handleJoinEvent = (event: GameEvent) => {
     console.log("Joining event:", event.id);

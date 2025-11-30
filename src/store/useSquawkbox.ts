@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import squawkboxData from '@/__mocks__/squawkbox.json';
+// Removed mock data import - fetch from real API instead
 
 export interface SquawkboxMessage {
   id: string;
@@ -28,7 +28,7 @@ interface SquawkboxStore {
 export const useSquawkbox = create<SquawkboxStore>((set, get) => ({
   currentChannel: "Madden",
   message: "",
-  messages: squawkboxData as SquawkboxMessage[],
+  messages: [], // TODO: Fetch from real API endpoint /api/squawkbox/messages
   channels: [
     "Madden", "UFC", "FIFA", "NHL", "NBA", "MLB", "UNDISPUTED", "F1", "TENNIS", "CustomUnity", 
     "Fighters", "Shooters", "Golf", "Rocket League", 

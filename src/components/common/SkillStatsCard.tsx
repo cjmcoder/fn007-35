@@ -43,6 +43,7 @@ export const SkillStatsCard: React.FC<SkillStatsCardProps> = ({ data, type, clas
 
   const getGameIcon = (game: string) => {
     // Return appropriate icon based on game type
+    if (!game) return '🎮';
     switch (game.toLowerCase()) {
       case 'madden':
       case 'nfl':

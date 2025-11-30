@@ -20,9 +20,10 @@ export const EnhancedWalletPanel = () => {
   const { wallet } = useWallet();
   const { setAddFCModalOpen } = useUI();
   
-  // Mock additional balance data
-  const tournamentEarningsPending = 750;
-  const fncBalance = 2450;
+  // TODO: Fetch real tournament earnings and FNC balance from API
+  // For now, these should come from real backend endpoints
+  const tournamentEarningsPending = 0; // TODO: GET /api/wallet/:userId/tournament-pending
+  const fncBalance = 0; // TODO: GET /api/wallet/:userId/fnc-balance
   
   const available = wallet.fc;
   const locked = wallet.lockedFC;

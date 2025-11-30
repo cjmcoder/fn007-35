@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -35,68 +35,40 @@ interface Message {
   category?: string;
 }
 
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    sender: "SCHOOLEM 007",
-    avatar: "/lovable-uploads/83a64713-521e-49d1-a475-4b264de18cf4.png",
-    subject: "Challenge Cancelled",
-    content: "SCHOOLEM 007 has cancelled their challenge",
-    timestamp: "9/01 10:22 pm",
-    isNew: true,
-    type: "challenge"
-  },
-  {
-    id: "2", 
-    sender: "SCHOOLEM 007",
-    avatar: "/lovable-uploads/83a64713-521e-49d1-a475-4b264de18cf4.png",
-    subject: "New Challenge",
-    content: "SCHOOLEM 007 sent you a challenge",
-    timestamp: "9/01 10:22 pm",
-    isNew: true,
-    type: "challenge"
-  },
-  {
-    id: "3",
-    sender: "Pangos",
-    avatar: "/lovable-uploads/89d6cce3-74a3-4deb-aed9-65a543785aa1.png",
-    subject: "Message",
-    content: "Pangos sent you a message.",
-    timestamp: "8/18 11:40 am",
-    isNew: true,
-    type: "message"
-  },
-  {
-    id: "4",
-    sender: "tyeagles366",
-    avatar: "/lovable-uploads/934bd6df-9bca-4fb1-8eed-c03afc3fa032.png",
-    subject: "Game Request",
-    content: "wanna play 5 or 6 min quarters 10-25$",
-    timestamp: "8/18 11:30 am",
-    isNew: true,
-    type: "message"
-  },
-  {
-    id: "5",
-    sender: "System",
-    subject: "Welcome Bonus",
-    content: "Your welcome bonus has been credited to your account",
-    timestamp: "8/16 1:30 pm",
-    isNew: false,
-    type: "system"
-  }
-];
-
 export function MailInbox() {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [activeTab, setActiveTab] = useState("inbox");
   const [searchQuery, setSearchQuery] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch real messages from backend
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        setIsLoading(true);
+        // TODO: Replace with real endpoint when available
+        // const response = await fetch('/api/messages');
+        // if (!response.ok) throw new Error('Failed to fetch messages');
+        // const data = await response.json();
+        // setMessages(data.messages || []);
+        setMessages([]); // Empty until backend endpoint is ready
+      } catch (error) {
+        console.error('Failed to fetch messages:', error);
+        setMessages([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, []);
 
   const filterMessages = (type?: string) => {
-    let filtered = mockMessages;
+    let filtered = messages;
     
     if (type && type !== "inbox") {
-      filtered = mockMessages.filter(msg => {
+      filtered = messages.filter(msg => {
         switch(type) {
           case "challenges":
             return msg.type === "challenge";
@@ -114,9 +86,9 @@ export function MailInbox() {
     
     if (searchQuery) {
       filtered = filtered.filter(msg => 
-        msg.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        msg.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        msg.content.toLowerCase().includes(searchQuery.toLowerCase())
+        (msg.sender || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (msg.subject || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (msg.content || '').toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     

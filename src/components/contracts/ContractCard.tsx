@@ -203,7 +203,7 @@ export function ContractCard(props: ContractCardProps) {
             variant={canClaim ? "default" : (isActive ? "outline" : "default")}
             className="w-full"
             onClick={handleAction}
-            data-testid={`${currentCta.toLowerCase()}-btn`}
+            data-testid={`${currentCta?.toLowerCase() || 'action'}-btn`}
           >
             {currentCta}
           </Button>

@@ -5,6 +5,10 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { LiveProp } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
+import { useWallet } from '@/store/useWallet';
+import { useAuth } from '@/store/useAuth';
+import { propsApi } from '@/lib/api';
+import { PropIntegrationService } from '@/services/propIntegrationService';
 
 export const PropDetailModal: React.FC<{
   open: boolean;
@@ -12,9 +16,13 @@ export const PropDetailModal: React.FC<{
   propId: string | null;
 }> = ({ open, onOpenChange, propId }) => {
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
+  const { wallet, updateBalance } = useWallet();
   const [data, setData] = useState<LiveProp | null>(null);
   const [loading, setLoading] = useState(false);
+  const [stakeLoading, setStakeLoading] = useState(false);
   const [riskAmount, setRiskAmount] = useState('');
+  const [selectedSide, setSelectedSide] = useState<'OVER' | 'UNDER' | null>(null);
 
   // Initialize risk amount when data loads
   useEffect(() => {
@@ -29,13 +37,19 @@ export const PropDetailModal: React.FC<{
       if (!open || !propId) return;
       setLoading(true);
       try {
-        const res = await fetch(`/api/props/${propId}`);
-        if (res.ok) {
-          const d = await res.json();
-          if (active) setData(d as LiveProp);
-        } else {
-          // fallback: keep modal but indicate missing
-          if (active) setData(null);
+        // Try real API first, fallback to mock
+        try {
+          const prop = await propsApi.getProp(propId);
+          if (active) setData(prop);
+        } catch (error) {
+          // Fallback to mock data for development
+          const res = await fetch(`/api/props/${propId}`);
+          if (res.ok) {
+            const d = await res.json();
+            if (active) setData(d as LiveProp);
+          } else {
+            if (active) setData(null);
+          }
         }
       } finally {
         if (active) setLoading(false);
@@ -69,8 +83,75 @@ export const PropDetailModal: React.FC<{
     }
   };
 
-  const onAccept = () => {
-    toast({ title: 'Accepted', description: 'You accepted this skill prop.' });
+  const handleStakeProp = async () => {
+    if (!isAuthenticated) {
+      toast({ 
+        title: 'Login Required', 
+        description: 'Please log in to place prop bets.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (!selectedSide) {
+      toast({ 
+        title: 'Select Side', 
+        description: 'Please choose OVER or UNDER.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const stakeAmount = parseFloat(riskAmount);
+    if (isNaN(stakeAmount) || stakeAmount <= 0) {
+      toast({ 
+        title: 'Invalid Amount', 
+        description: 'Please enter a valid stake amount.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (wallet.fc < stakeAmount) {
+      toast({ 
+        title: 'Insufficient Funds', 
+        description: `You need ${stakeAmount} FC but only have ${wallet.fc} FC available.`,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setStakeLoading(true);
+    try {
+      // Place stake with full integration
+      await PropIntegrationService.stakePropWithIntegration(
+        data!.id, 
+        selectedSide, 
+        stakeAmount,
+        user!.id
+      );
+      
+      // Update wallet balance
+      const newBalance = wallet.fc - stakeAmount;
+      updateBalance({ fc: newBalance, lockedFC: wallet.lockedFC + stakeAmount });
+      
+      toast({ 
+        title: 'Stake Placed!', 
+        description: `${stakeAmount} FC staked on ${selectedSide} ${data!.title}. Good luck!`,
+        variant: 'default'
+      });
+      
+      // Close modal
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({ 
+        title: 'Stake Failed', 
+        description: error.message || 'Failed to place stake. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setStakeLoading(false);
+    }
   };
 
   const onView = () => {
@@ -122,6 +203,33 @@ export const PropDetailModal: React.FC<{
               </div>
             </div>
 
+            {/* Side Selection */}
+            <div className="space-y-3">
+              <div className="text-sm font-medium">Choose Your Side:</div>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant={selectedSide === 'OVER' ? 'default' : 'outline'}
+                  className={`h-12 ${selectedSide === 'OVER' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                  onClick={() => setSelectedSide('OVER')}
+                >
+                  <div className="text-center">
+                    <div className="font-bold">OVER {data.line}</div>
+                    <div className="text-xs opacity-75">+{Math.round((multiplier - 1) * 100)}</div>
+                  </div>
+                </Button>
+                <Button
+                  variant={selectedSide === 'UNDER' ? 'default' : 'outline'}
+                  className={`h-12 ${selectedSide === 'UNDER' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                  onClick={() => setSelectedSide('UNDER')}
+                >
+                  <div className="text-center">
+                    <div className="font-bold">UNDER {data.line}</div>
+                    <div className="text-xs opacity-75">+{Math.round((multiplier - 1) * 100)}</div>
+                  </div>
+                </Button>
+              </div>
+            </div>
+
             {/* Interactive Betting Section */}
             <div className="rounded-md border bg-background/50 p-4">
               <div className="grid grid-cols-3 gap-6 text-center">
@@ -157,6 +265,20 @@ export const PropDetailModal: React.FC<{
               </div>
             </div>
 
+            {/* Wallet Balance Display */}
+            <div className="rounded-md bg-slate-800 p-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-300">Available Balance:</span>
+                <span className="text-lg font-bold text-white">{wallet.fc.toFixed(1)} FC</span>
+              </div>
+              {wallet.lockedFC > 0 && (
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-sm text-slate-300">Locked:</span>
+                  <span className="text-sm text-yellow-400">{wallet.lockedFC.toFixed(1)} FC</span>
+                </div>
+              )}
+            </div>
+
             {/* Payout Calculation */}
             <div className="rounded-md bg-slate-700 p-4 space-y-2">
               <div className="flex justify-between items-center">
@@ -184,8 +306,12 @@ export const PropDetailModal: React.FC<{
           <Button variant="outline" onClick={onView} className="flex-1">
             View Challenge
           </Button>
-          <Button onClick={onAccept} className="flex-1 bg-green-600 hover:bg-green-700">
-            Accept
+          <Button 
+            onClick={handleStakeProp} 
+            disabled={stakeLoading || !selectedSide || !isAuthenticated}
+            className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50"
+          >
+            {stakeLoading ? 'Placing Stake...' : 'Place Stake'}
           </Button>
         </DialogFooter>
       </DialogContent>

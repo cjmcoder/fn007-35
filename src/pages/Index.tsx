@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
+import { matchApi, Match } from "@/lib/api-client";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const mockChallenges = [
   {
@@ -67,6 +70,70 @@ const mockChallenges = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [cursor, setCursor] = useState<string | undefined>();
+
+  // Load initial matches
+  useEffect(() => {
+    loadMatches();
+  }, []);
+
+  const loadMatches = async (loadMore = false) => {
+    try {
+      if (loadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+
+      const response = await matchApi.getActiveMatches({ 
+        limit: 20,
+        cursor: loadMore ? cursor : undefined 
+      });
+      
+      if (loadMore) {
+        setMatches(prev => [...prev, ...response.matches]);
+      } else {
+        setMatches(response.matches);
+      }
+      
+      setHasMore(response.hasMore);
+      setCursor(response.nextCursor);
+    } catch (error) {
+      console.error('Failed to load matches:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (hasMore && !loadingMore) {
+      loadMatches(true);
+    }
+  };
+
+  const handleJoinSuccess = () => {
+    // Refresh matches after successful join
+    loadMatches();
+  };
+
+  const handleViewProfile = (userId: string) => {
+    navigate(`/my-profile?userId=${userId}`);
+  };
+
+  const handleBrowsePlayers = () => {
+    navigate('/leaderboards');
+  };
+
+  const handleViewTournaments = () => {
+    navigate('/my-tournaments');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-bg flex">
       {/* Left Sidebar */}
@@ -107,24 +174,51 @@ const Index = () => {
                   </Badge>
                 </div>
                 
-                {mockChallenges.map((challenge, index) => (
-                  <ChallengeCard key={index} {...challenge} />
-                ))}
-                
-                <div className="text-center py-8">
-                  <Button 
-                    variant="outline" 
-                    className="neon-border"
-                    onClick={() => {
-                      toast({
-                        title: "Loading More Challenges",
-                        description: "Fetching additional challenges...",
-                      });
-                    }}
-                  >
-                    Load More Challenges
-                  </Button>
-                </div>
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="text-muted-foreground mt-2">Loading challenges...</p>
+                  </div>
+                ) : matches.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No active challenges found.</p>
+                    <p className="text-sm text-muted-foreground mt-1">Check back later for new matches!</p>
+                  </div>
+                ) : (
+                  <>
+                    {matches.map((match) => (
+                      <ChallengeCard 
+                        key={match.id}
+                        id={match.id}
+                        player={{
+                          username: `Player${match.hostId.slice(-4)}`, // Temporary username
+                          rating: 8.5, // Temporary rating
+                          status: "online" as const,
+                          userId: match.hostId, // Pass user ID for profile navigation
+                        }}
+                        game="Madden NFL 25"
+                        platform="PS5 XBX/S PC"
+                        prizeRange={`${match.entryFc} FC`}
+                        timePosted="Just now"
+                        onJoinSuccess={handleJoinSuccess}
+                        onViewProfile={handleViewProfile}
+                      />
+                    ))}
+                    
+                    {hasMore && (
+                      <div className="text-center py-8">
+                        <Button 
+                          variant="outline" 
+                          className="neon-border"
+                          onClick={handleLoadMore}
+                          disabled={loadingMore}
+                        >
+                          {loadingMore ? "Loading..." : "Load More Challenges"}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="players">
@@ -133,12 +227,7 @@ const Index = () => {
                   <p className="text-muted-foreground mb-4">Browse and connect with players from around the world</p>
                   <Button 
                     className="bg-gradient-primary hover:shadow-glow"
-                    onClick={() => {
-                      toast({
-                        title: "Coming Soon",
-                        description: "Player directory feature will be available soon!",
-                      });
-                    }}
+                    onClick={handleBrowsePlayers}
                   >
                     Browse Players
                   </Button>
@@ -151,12 +240,7 @@ const Index = () => {
                   <p className="text-muted-foreground mb-4">Join competitive tournaments and climb the rankings</p>
                   <Button 
                     className="bg-gradient-primary hover:shadow-glow"
-                    onClick={() => {
-                      toast({
-                        title: "Coming Soon",
-                        description: "Tournament listings will be available soon!",
-                      });
-                    }}
+                    onClick={handleViewTournaments}
                   >
                     View Tournaments
                   </Button>

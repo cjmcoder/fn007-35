@@ -15,7 +15,7 @@ const TopHeader = () => {
         {/* FlockNode Logo */}
         <div className="flex items-center space-x-2">
           <img 
-            src="/lovable-uploads/89d6cce3-74a3-4deb-aed9-65a543785aa1.png" 
+            src="/placeholder.svg" 
             alt="FlockNode Eagle Logo"
             className="w-8 h-8 object-contain"
           />

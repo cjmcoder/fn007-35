@@ -83,6 +83,13 @@ import type { LiveProp, TickerChannel, GameTitle, Platform } from '@/lib/types';
     mk({ id: 'unity-1', channel: 'Unity', game: 'CustomUnity', platform: 'PC', propType: 'Over/Under', title: 'Over/Under: Game Length (30.5 moves)', line: 30.5, statType: 'Game Length', entryFC: 15, payoutFC: 28.5, player: { id: 'u5', name: 'ChessMaster', rating: 8.7 } }),
     mk({ id: 'unity-2', channel: 'Unity', game: 'Arena Warriors', platform: 'PC', propType: 'Over/Under', title: 'Over/Under: Correct Answers (18.5)', line: 18.5, statType: 'Correct Answers', entryFC: 12, payoutFC: 22.8 }),
     mk({ id: 'unity-3', channel: 'Unity', game: 'Speed Trials', platform: 'PC', propType: 'Over/Under', title: 'Over/Under: Time to Victory (240.5 sec)', line: 240.5, statType: 'Time to Victory', entryFC: 20, payoutFC: 38 }),
+    
+    // FRESH CARDS - Added for demonstration
+    mk({ id: 'madden-fresh-1', channel: 'Madden', game: 'Madden', platform: 'PS5', propType: 'Over/Under', title: 'Over/Under: Total Sacks (3.5)', line: 3.5, statType: 'Total Sacks', entryFC: 30, payoutFC: 57, player: { id: 'u9', name: 'SackMaster', rating: 9.5 }, streamRequired: true, matchId: 'M25-PS5-FRESH1' }),
+    mk({ id: 'ufc-fresh-1', channel: 'UFC', game: 'UFC', platform: 'Xbox', propType: 'Over/Under', title: 'Over/Under: Total Ground Strikes (45.5)', line: 45.5, statType: 'Total Ground Strikes', entryFC: 25, payoutFC: 47.5, player: { id: 'u10', name: 'GroundGame', rating: 8.8 } }),
+    mk({ id: 'fifa-fresh-1', channel: 'FIFA', game: 'FIFA', platform: 'PC', propType: 'Over/Under', title: 'Over/Under: Total Fouls (12.5)', line: 12.5, statType: 'Total Fouls', entryFC: 18, payoutFC: 34.2, player: { id: 'u11', name: 'FairPlay', rating: 7.9 } }),
+    mk({ id: 'nba-fresh-1', channel: 'NBA', game: 'NBA', platform: 'PS5', propType: 'Over/Under', title: 'Over/Under: Total Blocks (8.5)', line: 8.5, statType: 'Total Blocks', entryFC: 22, payoutFC: 41.8, player: { id: 'u12', name: 'BlockParty', rating: 9.1 } }),
+    mk({ id: 'nhl-fresh-1', channel: 'NHL', game: 'NHL', platform: 'Xbox', propType: 'Over/Under', title: 'Over/Under: Total Saves (45.5)', line: 45.5, statType: 'Total Saves', entryFC: 28, payoutFC: 53.2, player: { id: 'u13', name: 'GoalStopper', rating: 8.6 }, streamRequired: true, matchId: 'NHL-XBOX-FRESH1' }),
   ];
 
   const origFetch = window.fetch.bind(window);

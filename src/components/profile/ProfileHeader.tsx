@@ -39,9 +39,10 @@ export const ProfileHeader = ({
   const { wallet } = useWallet();
   const [showFNCInUSD, setShowFNCInUSD] = useState(false);
   
-  // Mock FNC balance and conversion rate
-  const fncBalance = 2450;
-  const fncToUSDRate = 0.024; // $0.024 per FNC
+  // TODO: Fetch real FNC balance from API
+  // For now, FNC features are not yet available in production
+  const fncBalance = 0; // TODO: GET /api/wallet/:userId/fnc-balance
+  const fncToUSDRate = 0.024; // $0.024 per FNC (from backend config)
   const fncUSDValue = fncBalance * fncToUSDRate;
 
   const winRate = wins + losses > 0 ? Math.round((wins / (wins + losses)) * 100) : 0;
